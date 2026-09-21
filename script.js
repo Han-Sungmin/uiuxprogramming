@@ -1,6 +1,10 @@
-const btn = document.getElementById("btn");
-const msg = document.getElementById("msg");
+const subscribeForm = document.getElementById("subscribe-form");
+const subscribeMessage = document.getElementById("subscribe-message");
 
-btn.addEventListener("click", function () {
-  msg.textContent = "안녕하세요!";
-});
+if (subscribeForm) {
+  subscribeForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    subscribeMessage.textContent = "알림 신청이 완료되었습니다.";
+    subscribeForm.reset();
+  });
+}
