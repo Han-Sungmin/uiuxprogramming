@@ -77,20 +77,20 @@
     <section id="subscribe" class="content-section subscribe-section">
       <h2>알림 받기</h2>
       <p>이메일을 등록하면 습득물 알림을 놓치지 않고 받아볼 수 있습니다.</p>
-      <form id="subscribe-form" class="subscribe-form">
+      <!-- novalidate: 브라우저 기본 검사 대신 script.js의 조건문으로 입력값을 확인합니다. -->
+      <form id="subscribe-form" class="subscribe-form" novalidate>
         <label class="email-field" for="email">
-          이메일
+          학교 이메일
           <input
             type="email"
             id="email"
             name="email"
-            placeholder="name@example.com"
-            required
+            placeholder="student@school.ac.kr"
           />
         </label>
-        <button class="primary-button" type="submit">알림 신청하기</button>
+        <button id="subscribeButton" class="primary-button" type="submit">알림 신청하기</button>
       </form>
-      <p id="subscribe-message"></p>
+      <p id="subscribe-message" aria-live="polite">학교 이메일(ac.kr)을 입력하면 습득물 알림을 보내드립니다.</p>
     </section>
   </main>
 

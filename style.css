@@ -227,8 +227,46 @@ input[type="email"]:focus {
 #subscribe-message {
   margin-top: 16px;
   margin-bottom: 0;
-  color: #4f46e5;
+  color: #5e6272;
   font-weight: 700;
+  overflow-wrap: anywhere; /* 긴 이메일 주소가 모바일에서 잘리지 않게 줄바꿈합니다. */
+}
+
+/* 5주차: script.js가 처리 결과에 따라 붙이는 클래스입니다. */
+#subscribe-message.is-success,
+#subscribe-message.is-error,
+#subscribe-message.is-info {
+  padding: 12px 14px;
+  border-radius: 8px;
+}
+
+#subscribe-message.is-success {
+  color: #245c3a;
+  background-color: #e7f7ed;
+}
+
+#subscribe-message.is-error {
+  color: #b42318;
+  background-color: #fdecea;
+}
+
+#subscribe-message.is-info {
+  color: #4038a5;
+  background-color: #e4e2ff;
+}
+
+input[type="email"].is-invalid {
+  border-color: #b42318;
+  outline-color: #f6c8c3;
+}
+
+/* 신청이 끝나 비활성화된 버튼은 회색으로 바꿉니다. */
+.primary-button:disabled,
+.primary-button:disabled:hover {
+  color: #f6f6fb;
+  background-color: #9a9cad;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .site-footer {
