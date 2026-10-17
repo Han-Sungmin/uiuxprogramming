@@ -19,6 +19,8 @@
     <p class="eyebrow">CAMPUS LOST &amp; FOUND</p>
     <h1>캠퍼스 분실물 찾기</h1>
     <p class="header-description">학교에서 잃어버린 물건, 등록 한 번으로 빠르게 찾아드립니다.</p>
+    <!-- 6주차 click: 누를 때마다 밝은 화면과 어두운 화면을 전환합니다. -->
+    <button id="themeButton" class="theme-button" type="button" aria-pressed="false">어두운 화면으로 보기</button>
     <nav class="site-nav" aria-label="주요 메뉴">
       <a href="#about">서비스 소개</a>
       <a href="#features">주요 기능</a>
@@ -67,11 +69,45 @@
 
     <section id="steps" class="content-section">
       <h2>이용 방법</h2>
-      <ol class="steps-list">
-        <li>잃어버린 물건의 정보를 등록합니다.</li>
-        <li>등록한 장소 주변의 습득물 목록을 확인합니다.</li>
-        <li>일치하는 물건을 찾으면 알림을 받고 찾아갑니다.</li>
-      </ol>
+      <p>내 상황에 맞는 탭을 눌러 이용 방법을 확인하세요.</p>
+
+      <!-- 6주차 탭: 각 버튼의 data-target(#선택자)과 패널의 id를 맞춰 연결합니다. -->
+      <div class="tabs" role="tablist" aria-label="상황별 이용 방법">
+        <button id="tab-lost" class="tab is-active" type="button" role="tab"
+          aria-selected="true" aria-controls="panel-lost" data-target="#panel-lost">물건을 잃어버렸어요</button>
+        <button id="tab-found" class="tab" type="button" role="tab"
+          aria-selected="false" aria-controls="panel-found" data-target="#panel-found">물건을 주웠어요</button>
+        <button id="tab-place" class="tab" type="button" role="tab"
+          aria-selected="false" aria-controls="panel-place" data-target="#panel-place">보관 장소 안내</button>
+      </div>
+
+      <div id="panel-lost" class="panel is-active" role="tabpanel" aria-labelledby="tab-lost">
+        <h3>잃어버린 물건을 찾을 때</h3>
+        <ol class="steps-list">
+          <li>잃어버린 물건의 종류와 마지막으로 본 장소를 등록합니다.</li>
+          <li>등록한 장소 주변의 습득물 목록을 확인합니다.</li>
+          <li>알림을 신청해 두면 비슷한 습득물이 등록될 때 이메일로 알려드립니다.</li>
+        </ol>
+      </div>
+
+      <div id="panel-found" class="panel" role="tabpanel" aria-labelledby="tab-found" hidden>
+        <h3>주운 물건을 돌려줄 때</h3>
+        <ol class="steps-list">
+          <li>물건 사진을 찍고 주운 장소와 시간을 기록합니다.</li>
+          <li>습득물로 등록하면 같은 장소에서 물건을 잃어버린 학생에게 알림이 갑니다.</li>
+          <li>물건은 가까운 보관 장소에 맡기고, 맡긴 장소를 게시글에 남깁니다.</li>
+        </ol>
+      </div>
+
+      <div id="panel-place" class="panel" role="tabpanel" aria-labelledby="tab-place" hidden>
+        <h3>습득물 보관 장소</h3>
+        <ul class="place-list">
+          <li><strong>학생회관 1층 학생지원센터</strong> 평일 09:00 ~ 18:00</li>
+          <li><strong>중앙도서관 1층 안내데스크</strong> 매일 09:00 ~ 22:00</li>
+          <li><strong>각 단과대학 행정실</strong> 평일 09:00 ~ 17:00</li>
+        </ul>
+        <p class="panel-note">신분증·지갑·전자기기처럼 중요한 물건은 학생지원센터에서 따로 보관합니다.</p>
+      </div>
     </section>
 
     <section id="subscribe" class="content-section subscribe-section">
@@ -88,9 +124,36 @@
             placeholder="student@school.ac.kr"
           />
         </label>
-        <button id="subscribeButton" class="primary-button" type="submit">알림 신청하기</button>
+
+        <!-- 6주차 input: 입력할 때마다 글자 수를 바로 보여줍니다. -->
+        <div class="keyword-field">
+          <label for="keyword">찾는 물건 <span class="optional">(선택)</span></label>
+          <input
+            type="text"
+            id="keyword"
+            name="keyword"
+            maxlength="20"
+            placeholder="예: 검정색 에어팟 케이스"
+          />
+          <p id="keywordCount" class="keyword-count" aria-live="polite">0 / 20</p>
+        </div>
+
+        <!-- 6주차 change: 수신 동의에 체크해야 신청 버튼이 활성화됩니다. -->
+        <div class="agree-field">
+          <label class="agree-row" for="agreeCheck">
+            <input type="checkbox" id="agreeCheck" name="agree" />
+            습득물 알림 이메일 수신에 동의합니다.
+          </label>
+          <p id="agreeMessage" class="agree-message" aria-live="polite">수신 동의에 체크하면 신청 버튼이 활성화됩니다.</p>
+        </div>
+
+        <button id="subscribeButton" class="primary-button" type="submit" disabled>수신 동의 후 신청 가능</button>
       </form>
       <p id="subscribe-message" aria-live="polite">학교 이메일(ac.kr)을 입력하면 습득물 알림을 보내드립니다.</p>
+      <p class="storage-note">
+        ※ 신청 목록은 지금 열려 있는 화면에만 임시로 저장되어 새로고침하면 사라집니다.
+        그래서 중복 신청 확인도 현재 방문한 동안에만 이루어집니다.
+      </p>
     </section>
   </main>
 

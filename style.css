@@ -68,6 +68,30 @@ main,
   font-size: 18px;
 }
 
+/* 6주차: 화면 테마 전환 버튼 */
+.theme-button {
+  margin-bottom: 20px;
+  padding: 10px 16px;
+  border: 1px solid #d7d4f6;
+  border-radius: 999px;
+  color: #4f46e5;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.theme-button:hover {
+  background-color: #ebe9ff;
+}
+
+.theme-button:focus {
+  outline: 3px solid #b9b4ef;
+  outline-offset: 3px;
+}
+
 /* 내비게이션을 한 줄로 배치하고 조작 상태를 보여줍니다. */
 .site-nav {
   display: flex;
@@ -162,27 +186,157 @@ main,
   margin-top: 10px;
 }
 
+/* 6주차: 상황별 이용 방법 탭 */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tab {
+  padding: 10px 16px;
+  border: 1px solid #deddea;
+  border-radius: 8px;
+  color: #5e6272;
+  font: inherit;
+  font-weight: 700;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tab:hover {
+  color: #fff;
+  background-color: #4f46e5;
+}
+
+.tab:focus {
+  outline: 3px solid #b9b4ef;
+  outline-offset: 2px;
+}
+
+/* 선택된 탭: 글자색과 아래쪽 굵은 선으로 구분합니다. */
+.tab.is-active {
+  border-color: #4f46e5;
+  border-bottom: 4px solid #4f46e5;
+  color: #4f46e5;
+  background-color: #f4f3ff;
+}
+
+.tab.is-active:hover {
+  color: #fff;
+  background-color: #4f46e5;
+}
+
+.panel {
+  padding: 24px;
+  border: 1px solid #d7d4f6;
+  border-radius: 12px;
+  background-color: #f4f3ff;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.place-list {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+
+.place-list li + li {
+  margin-top: 8px;
+}
+
+.place-list strong {
+  margin-right: 6px;
+}
+
+.panel-note {
+  margin-bottom: 0;
+  color: #5e6272;
+  font-size: 15px;
+}
+
 /* 알림 신청 영역을 눈에 띄게 강조합니다. */
 .subscribe-section {
   background-color: #f0efff;
 }
 
+/* 6주차: 입력 항목이 늘어나서 폼을 세로 한 줄씩 쌓는 Grid로 바꿨습니다. */
 .subscribe-form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 12px;
+  display: grid;
+  gap: 16px;
   max-width: 480px;
   margin-top: 20px;
 }
 
-.email-field {
-  flex: 1 1 220px;
+.email-field,
+.keyword-field label {
   margin: 0;
   font-weight: 700;
 }
 
-input[type="email"] {
+.optional {
+  color: #5e6272;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.keyword-count {
+  margin: 6px 0 0;
+  color: #5e6272;
+  font-size: 14px;
+  text-align: right;
+}
+
+/* 최대 글자 수에 닿으면 주황색으로 강조합니다. */
+.keyword-count.is-full {
+  color: #b54708;
+  font-weight: 700;
+}
+
+.agree-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.agree-row input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: #4f46e5;
+}
+
+.agree-message {
+  margin: 6px 0 0;
+  color: #5e6272;
+  font-size: 14px;
+}
+
+/* 동의하면 안내 문구를 초록색으로 바꿉니다. */
+.agree-message.is-ready {
+  color: #245c3a;
+  font-weight: 700;
+}
+
+.subscribe-form .primary-button {
+  justify-self: start;
+}
+
+.storage-note {
+  margin-top: 12px;
+  margin-bottom: 0;
+  color: #5e6272;
+  font-size: 14px;
+}
+
+input[type="email"],
+input[type="text"] {
   display: block;
   width: 100%;
   margin-top: 8px;
@@ -193,7 +347,8 @@ input[type="email"] {
   transition: border-color 0.2s ease, outline-color 0.2s ease;
 }
 
-input[type="email"]:focus {
+input[type="email"]:focus,
+input[type="text"]:focus {
   border-color: #4f46e5;
   outline: 3px solid #d9d6ff;
   outline-offset: 2px;
@@ -275,6 +430,89 @@ input[type="email"].is-invalid {
   font-size: 14px;
 }
 
+/* 6주차: body에 dark 클래스가 붙으면 어두운 화면으로 바꿉니다. */
+body.dark {
+  color: #f4f4f8;
+  background-color: #20212a;
+}
+
+body.dark h1,
+body.dark .eyebrow {
+  color: #b9b5ff;
+}
+
+body.dark p,
+body.dark .site-nav a,
+body.dark .optional {
+  color: #d8d8e2;
+}
+
+body.dark .site-nav a:hover {
+  color: #fff;
+  background-color: #3a3850;
+}
+
+body.dark .theme-button {
+  border-color: #50515f;
+  color: #f4f4f8;
+  background-color: #2d2e38;
+}
+
+body.dark .theme-button:hover {
+  background-color: #3a3850;
+}
+
+body.dark .content-section,
+body.dark .feature-card,
+body.dark .panel,
+body.dark .tab {
+  border-color: #50515f;
+  background-color: #2d2e38;
+}
+
+body.dark .subscribe-section {
+  background-color: #2a2940;
+}
+
+body.dark .tab {
+  color: #d8d8e2;
+}
+
+body.dark .tab.is-active {
+  border-color: #b9b5ff;
+  color: #b9b5ff;
+  background-color: #3a3850;
+}
+
+body.dark .tab:hover {
+  color: #fff;
+  background-color: #4f46e5;
+}
+
+body.dark input[type="email"],
+body.dark input[type="text"] {
+  border-color: #6b6d80;
+  color: #f4f4f8;
+  background-color: #20212a;
+}
+
+body.dark .keyword-count.is-full {
+  color: #fdb022;
+}
+
+body.dark .agree-message.is-ready {
+  color: #75e0a7;
+}
+
+body.dark #subscribe-message {
+  color: #d8d8e2;
+}
+
+/* 결과 문구는 밝은 배경을 유지하므로 글자색을 원래대로 둡니다. */
+body.dark #subscribe-message.is-success { color: #245c3a; }
+body.dark #subscribe-message.is-error { color: #b42318; }
+body.dark #subscribe-message.is-info { color: #4038a5; }
+
 /* 뷰포트 너비가 768px 이하일 때: 메뉴·카드·폼을 한 열로 바꾸고 글자와 여백을 줄입니다. */
 @media (max-width: 768px) {
   body {
@@ -348,18 +586,33 @@ input[type="email"].is-invalid {
     padding: 20px;
   }
 
-  /* 이메일 입력창과 버튼을 세로로 배치합니다. */
-  .subscribe-form {
+  /* 탭을 세로로 쌓고 너비를 꽉 채웁니다. */
+  .tabs {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .tab {
+    width: 100%;
+    min-height: 48px;
+    text-align: left;
+  }
+
+  .panel {
+    padding: 20px 16px;
+  }
+
+  /* 폼은 화면 너비를 꽉 채우고, 버튼도 가로 전체로 늘립니다. */
+  .subscribe-form {
     max-width: none;
   }
 
-  .email-field {
-    flex: none;
+  .subscribe-form .primary-button {
+    justify-self: stretch;
   }
 
   input[type="email"],
+  input[type="text"],
   .primary-button {
     width: 100%;
   }
