@@ -424,6 +424,240 @@ input[type="email"].is-invalid {
   transform: none;
 }
 
+/* ---------------------------------------------------------------
+   7주차: 분실물 신고 흐름
+   --------------------------------------------------------------- */
+.report-intro-steps {
+  color: #5e6272;
+}
+
+.report-flow[hidden],
+.report-intro[hidden],
+.report-step[hidden],
+#contactEmailField[hidden] {
+  display: none;
+}
+
+/* 진행 표시: 지금 단계는 보라색, 지난 단계는 체크 표시 */
+.report-progress {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  counter-reset: report-step;
+}
+
+.report-progress li {
+  padding: 8px 10px;
+  border-bottom: 4px solid #deddea;
+  color: #5e6272;
+  font-size: 15px;
+  font-weight: 700;
+  counter-increment: report-step;
+}
+
+.report-progress li::before {
+  content: counter(report-step) ". ";
+}
+
+.report-progress li.is-current {
+  border-bottom-color: #4f46e5;
+  color: #4f46e5;
+}
+
+.report-progress li.is-done {
+  border-bottom-color: #8b85f0;
+  color: #4038a5;
+}
+
+.report-progress li.is-done::before {
+  content: "✓ ";
+}
+
+.report-progress-text {
+  margin-bottom: 20px;
+  color: #5e6272;
+  font-size: 14px;
+}
+
+.report-step {
+  max-width: 560px;
+  padding: 24px;
+  border: 1px solid #d7d4f6;
+  border-radius: 12px;
+  background-color: #f4f3ff;
+}
+
+.report-step h3:focus {
+  outline: none;
+}
+
+.report-field {
+  margin: 0 0 18px;
+}
+
+.report-field > label,
+.contact-field legend {
+  display: block;
+  font-weight: 700;
+}
+
+.contact-field {
+  padding: 0;
+  border: 0;
+}
+
+.contact-field legend {
+  margin-bottom: 4px;
+  padding: 0;
+}
+
+.radio-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.radio-row input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: #4f46e5;
+}
+
+.field-help {
+  margin: 4px 0 0;
+  color: #5e6272;
+  font-size: 14px;
+}
+
+.field-error {
+  margin: 6px 0 0;
+  color: #b42318;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.field-error:empty {
+  display: none;
+}
+
+.report-field select,
+.report-field input[type="date"] {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 1px solid #bfc1d1;
+  border-radius: 8px;
+  font: inherit;
+  background-color: #fff;
+}
+
+.report-field select:focus,
+.report-field input[type="date"]:focus {
+  border-color: #4f46e5;
+  outline: 3px solid #d9d6ff;
+  outline-offset: 2px;
+}
+
+/* 필수값이 비었거나 잘못된 칸 */
+.report-field .has-error,
+.report-field input.has-error {
+  border-color: #b42318;
+  outline-color: #f6c8c3;
+}
+
+.contact-field.has-error .radio-row {
+  color: #b42318;
+}
+
+.step-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.secondary-button {
+  padding: 12px 18px;
+  border: 1px solid #4f46e5;
+  border-radius: 8px;
+  color: #4f46e5;
+  font: inherit;
+  font-weight: 700;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.secondary-button:hover {
+  background-color: #ebe9ff;
+}
+
+.secondary-button:focus {
+  outline: 3px solid #b9b4ef;
+  outline-offset: 3px;
+}
+
+/* 확인 화면: 항목 이름과 값을 두 열로 */
+.report-summary {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 10px 16px;
+  margin: 0 0 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+.report-summary dt {
+  color: #5e6272;
+  font-weight: 700;
+}
+
+.report-summary dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* 완료 화면 */
+.report-done {
+  border-color: #a6dfbc;
+  background-color: #e7f7ed;
+}
+
+.report-done h3 {
+  color: #245c3a;
+}
+
+.report-number strong {
+  font-size: 20px;
+  letter-spacing: 0.04em;
+}
+
+#reportResult {
+  overflow-wrap: anywhere;
+}
+
+/* 확정 팝업 */
+.report-confirm {
+  width: calc(100% - 32px);
+  max-width: 420px;
+  padding: 24px;
+  border: 0;
+  border-radius: 12px;
+  color: #292a31;
+}
+
+.report-confirm::backdrop {
+  background-color: rgba(35, 24, 49, 0.6);
+}
+
 .site-footer {
   padding: 16px 24px 40px;
   color: #5e6272;
@@ -506,6 +740,55 @@ body.dark .agree-message.is-ready {
 
 body.dark #subscribe-message {
   color: #d8d8e2;
+}
+
+/* 7주차 신고 흐름의 어두운 화면 */
+body.dark .report-step,
+body.dark .report-summary,
+body.dark .report-confirm,
+body.dark .secondary-button,
+body.dark .report-field select,
+body.dark .report-field input[type="date"] {
+  border-color: #50515f;
+  color: #f4f4f8;
+  background-color: #20212a;
+}
+
+body.dark .report-step {
+  background-color: #2d2e38;
+}
+
+body.dark .secondary-button {
+  border-color: #b9b5ff;
+  color: #b9b5ff;
+}
+
+body.dark .secondary-button:hover {
+  background-color: #3a3850;
+}
+
+body.dark .report-progress li,
+body.dark .report-summary dt {
+  color: #d8d8e2;
+}
+
+body.dark .report-progress li.is-current,
+body.dark .report-progress li.is-done {
+  color: #b9b5ff;
+}
+
+body.dark .field-error,
+body.dark .contact-field.has-error .radio-row {
+  color: #ff9c92;
+}
+
+body.dark .report-done {
+  border-color: #3d7a55;
+  background-color: #1f3a2b;
+}
+
+body.dark .report-done h3 {
+  color: #75e0a7;
 }
 
 /* 결과 문구는 밝은 배경을 유지하므로 글자색을 원래대로 둡니다. */
@@ -619,5 +902,34 @@ body.dark #subscribe-message.is-info { color: #4038a5; }
 
   .primary-button {
     min-height: 48px;
+  }
+
+  /* 7주차 신고 흐름: 단계 영역을 꽉 채우고, 버튼은 세로로 쌓아 다음 행동 버튼을 위에 둡니다. */
+  .report-progress li {
+    padding: 8px 4px;
+    font-size: 14px;
+  }
+
+  .report-step {
+    max-width: none;
+    padding: 20px 16px;
+  }
+
+  .step-actions {
+    flex-direction: column-reverse;
+  }
+
+  .secondary-button {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .report-summary {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .report-summary dd + dt {
+    margin-top: 10px;
   }
 } /* 768px 미디어 쿼리 끝 */

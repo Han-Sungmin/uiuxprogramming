@@ -11,8 +11,9 @@
   <!--
   사용자: 학교에서 물건을 자주 잃어버리거나 주운 물건을 어떻게 돌려줘야 할지 모르는 학생
   목적: 잃어버린 물건을 빠르게 찾거나, 주운 물건을 쉽게 등록해 돌려준다
-  핵심 행동: 원하는 영역으로 이동한다 · 이메일로 습득 알림을 신청한다
-  정보 순서: 서비스 소개 → 주요 기능 → 이용 방법 → 알림 받기
+  핵심 행동: 잃어버린 물건을 신고한다(7주차) · 이메일로 습득 알림을 신청한다
+  완료 조건: 신고 내용을 확인·확정해 신고 번호가 적힌 완료 화면에 도달하고 다음 행동을 알 수 있다
+  정보 순서: 서비스 소개 → 주요 기능 → 이용 방법 → 분실물 신고 → 알림 받기
   -->
 
   <header class="site-header">
@@ -25,6 +26,7 @@
       <a href="#about">서비스 소개</a>
       <a href="#features">주요 기능</a>
       <a href="#steps">이용 방법</a>
+      <a href="#report">분실물 신고</a>
       <a href="#subscribe">알림 받기</a>
     </nav>
   </header>
@@ -84,7 +86,7 @@
       <div id="panel-lost" class="panel is-active" role="tabpanel" aria-labelledby="tab-lost">
         <h3>잃어버린 물건을 찾을 때</h3>
         <ol class="steps-list">
-          <li>잃어버린 물건의 종류와 마지막으로 본 장소를 등록합니다.</li>
+          <li>잃어버린 물건의 종류와 마지막으로 본 장소를 <a href="#report">분실물 신고</a>로 등록합니다.</li>
           <li>등록한 장소 주변의 습득물 목록을 확인합니다.</li>
           <li>알림을 신청해 두면 비슷한 습득물이 등록될 때 이메일로 알려드립니다.</li>
         </ol>
@@ -108,6 +110,133 @@
         </ul>
         <p class="panel-note">신분증·지갑·전자기기처럼 중요한 물건은 학생지원센터에서 따로 보관합니다.</p>
       </div>
+    </section>
+
+    <!-- 7주차 사용자 흐름: 시작 → 물건 정보 → 장소·연락 → 내용 확인(확정 팝업) → 완료 -->
+    <section id="report" class="content-section report-section">
+      <h2>분실물 신고</h2>
+      <p>잃어버린 물건과 장소를 남겨 두면 비슷한 습득물이 등록될 때 바로 확인할 수 있습니다.</p>
+
+      <div id="reportIntro" class="report-intro">
+        <p class="report-intro-steps">물건 정보 → 장소·연락 → 내용 확인, 세 단계면 신고가 끝납니다.</p>
+        <button id="reportStart" class="primary-button" type="button">분실물 신고 시작하기</button>
+      </div>
+
+      <div id="reportFlow" class="report-flow" hidden>
+        <ol class="report-progress" aria-label="신고 진행 단계">
+          <li data-step="1">물건 정보</li>
+          <li data-step="2">장소·연락</li>
+          <li data-step="3">내용 확인</li>
+        </ol>
+        <p id="reportProgressText" class="report-progress-text" aria-live="polite">1 / 3 단계 · 물건 정보</p>
+
+        <!-- 1단계: 물건 정보 -->
+        <section class="report-step" data-step="1" aria-labelledby="reportTitle1">
+          <h3 id="reportTitle1" tabindex="-1">어떤 물건을 잃어버렸나요?</h3>
+          <div class="report-field">
+            <label for="itemCategory">물건 종류</label>
+            <select id="itemCategory" aria-describedby="itemCategoryError">
+              <option value="">종류를 선택하세요</option>
+              <option value="전자기기">전자기기 (이어폰·충전기 등)</option>
+              <option value="지갑·카드">지갑·카드·신분증</option>
+              <option value="가방">가방·파우치</option>
+              <option value="책·필기구">책·필기구</option>
+              <option value="의류·소품">의류·우산·소품</option>
+              <option value="기타">기타</option>
+            </select>
+            <p id="itemCategoryError" class="field-error" role="alert"></p>
+          </div>
+          <div class="report-field">
+            <label for="itemDetail">물건 특징</label>
+            <p id="itemDetailHelp" class="field-help">색상·브랜드·스티커처럼 내 물건임을 알 수 있는 특징을 적어 주세요.</p>
+            <input type="text" id="itemDetail" maxlength="30"
+              placeholder="예: 흰색 에어팟 프로, 고양이 스티커"
+              aria-describedby="itemDetailHelp itemDetailError" />
+            <p id="itemDetailError" class="field-error" role="alert"></p>
+          </div>
+          <div class="step-actions">
+            <button id="reportNext1" class="primary-button" type="button">잃어버린 장소 입력하기</button>
+          </div>
+        </section>
+
+        <!-- 2단계: 장소·날짜·연락 방법 -->
+        <section class="report-step" data-step="2" aria-labelledby="reportTitle2" hidden>
+          <h3 id="reportTitle2" tabindex="-1">어디에서 잃어버렸나요?</h3>
+          <div class="report-field">
+            <label for="lostPlace">잃어버린 장소</label>
+            <select id="lostPlace" aria-describedby="lostPlaceError">
+              <option value="">장소를 선택하세요</option>
+              <option value="학생회관">학생회관</option>
+              <option value="중앙도서관">중앙도서관</option>
+              <option value="공학관">공학관</option>
+              <option value="인문관">인문관</option>
+              <option value="체육관">체육관</option>
+              <option value="잘 모르겠음">잘 모르겠음</option>
+            </select>
+            <p id="lostPlaceError" class="field-error" role="alert"></p>
+          </div>
+          <div class="report-field">
+            <label for="lostDate">잃어버린 날짜</label>
+            <input type="date" id="lostDate" aria-describedby="lostDateError" />
+            <p id="lostDateError" class="field-error" role="alert"></p>
+          </div>
+          <fieldset id="contactMethod" class="report-field contact-field" aria-describedby="contactMethodError">
+            <legend>연락 받을 방법</legend>
+            <label class="radio-row">
+              <input type="radio" name="contact" value="email" />
+              학교 이메일로 습득 알림 받기
+            </label>
+            <label class="radio-row">
+              <input type="radio" name="contact" value="visit" />
+              보관 장소에 직접 문의하기
+            </label>
+            <p id="contactMethodError" class="field-error" role="alert"></p>
+          </fieldset>
+          <!-- 이메일을 고른 경우에만 보여 주고 검사합니다. -->
+          <div id="contactEmailField" class="report-field" hidden>
+            <label for="contactEmail">알림 받을 학교 이메일</label>
+            <input type="email" id="contactEmail" placeholder="student@school.ac.kr"
+              aria-describedby="contactEmailError" />
+            <p id="contactEmailError" class="field-error" role="alert"></p>
+          </div>
+          <div class="step-actions">
+            <button id="reportBack2" class="secondary-button" type="button">이전</button>
+            <button id="reportNext2" class="primary-button" type="button">신고 내용 확인하기</button>
+          </div>
+        </section>
+
+        <!-- 3단계: 내용 확인 -->
+        <section class="report-step" data-step="3" aria-labelledby="reportTitle3" hidden>
+          <h3 id="reportTitle3" tabindex="-1">신고 내용을 확인해 주세요</h3>
+          <dl id="reportSummary" class="report-summary"></dl>
+          <p class="field-help">고칠 내용이 있으면 이전으로 돌아가 수정하세요. 입력한 값은 그대로 남아 있습니다.</p>
+          <div class="step-actions">
+            <button id="reportBack3" class="secondary-button" type="button">이전</button>
+            <button id="reportSubmit" class="primary-button" type="button">이 내용으로 신고하기</button>
+          </div>
+        </section>
+
+        <!-- 4단계: 완료 -->
+        <section class="report-step report-done" data-step="4" aria-labelledby="reportTitle4" hidden>
+          <h3 id="reportTitle4" tabindex="-1">분실물 신고가 접수되었습니다</h3>
+          <p class="report-number">신고 번호 <strong id="reportNumber"></strong></p>
+          <p id="reportResult"></p>
+          <div class="step-actions">
+            <button id="reportPlace" class="secondary-button" type="button">보관 장소 확인하기</button>
+            <button id="reportRestart" class="primary-button" type="button">다른 물건 신고하기</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- 확정 팝업: '다시 확인하기'는 값을 유지한 채 확인 화면으로 돌아갑니다. -->
+      <dialog id="reportConfirm" class="report-confirm" aria-labelledby="reportConfirmTitle">
+        <h3 id="reportConfirmTitle">이 내용으로 분실물을 신고할까요?</h3>
+        <p>신고하면 신고 번호가 발급되고 완료 화면으로 이동합니다.</p>
+        <div class="step-actions">
+          <button id="confirmCancel" class="secondary-button" type="button">다시 확인하기</button>
+          <button id="confirmSubmit" class="primary-button" type="button">신고 확정</button>
+        </div>
+      </dialog>
     </section>
 
     <section id="subscribe" class="content-section subscribe-section">
