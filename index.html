@@ -11,9 +11,9 @@
   <!--
   사용자: 학교에서 물건을 자주 잃어버리거나 주운 물건을 어떻게 돌려줘야 할지 모르는 학생
   목적: 잃어버린 물건을 빠르게 찾거나, 주운 물건을 쉽게 등록해 돌려준다
-  핵심 행동: 잃어버린 물건을 신고한다(7주차) · 이메일로 습득 알림을 신청한다
+  핵심 행동: 잃어버린 물건을 신고한다(7주차) · 접수한 신고를 다시 찾고 취소한다(중간고사) · 이메일로 습득 알림을 신청한다
   완료 조건: 신고 내용을 확인·확정해 신고 번호가 적힌 완료 화면에 도달하고 다음 행동을 알 수 있다
-  정보 순서: 서비스 소개 → 주요 기능 → 이용 방법 → 분실물 신고 → 알림 받기
+  정보 순서: 서비스 소개 → 주요 기능 → 이용 방법 → 분실물 신고 → 내 신고 내역 → 알림 받기
   -->
 
   <header class="site-header">
@@ -27,6 +27,7 @@
       <a href="#features">주요 기능</a>
       <a href="#steps">이용 방법</a>
       <a href="#report">분실물 신고</a>
+      <a href="#history">내 신고 내역</a>
       <a href="#subscribe">알림 받기</a>
     </nav>
   </header>
@@ -89,6 +90,7 @@
           <li>잃어버린 물건의 종류와 마지막으로 본 장소를 <a href="#report">분실물 신고</a>로 등록합니다.</li>
           <li>등록한 장소 주변의 습득물 목록을 확인합니다.</li>
           <li>알림을 신청해 두면 비슷한 습득물이 등록될 때 이메일로 알려드립니다.</li>
+          <li>물건을 찾았다면 <a href="#history">내 신고 내역</a>에서 신고를 취소합니다.</li>
         </ol>
       </div>
 
@@ -223,6 +225,7 @@
           <p id="reportResult"></p>
           <div class="step-actions">
             <button id="reportPlace" class="secondary-button" type="button">보관 장소 확인하기</button>
+            <button id="reportHistory" class="secondary-button" type="button">내 신고 내역 보기</button>
             <button id="reportRestart" class="primary-button" type="button">다른 물건 신고하기</button>
           </div>
         </section>
@@ -239,7 +242,48 @@
       </dialog>
     </section>
 
-    <section id="subscribe" class="content-section subscribe-section">
+    <!-- 중간고사: 내 신고 내역 — 7주차 흐름의 끝(완료)에서 이어집니다.
+         완료한 신고를 목록에 모아 다시 열고, 조건으로 찾고, 신고를 취소할 수 있습니다. -->
+    <section id="history" class="content-section history-section">
+      <h2>내 신고 내역</h2>
+      <p>접수한 신고를 다시 열어 보고, 물건을 찾았거나 잘못 신고했다면 신고를 취소하세요.</p>
+      <p id="historyStats" class="history-stats" hidden></p>
+
+      <!-- novalidate: 검색어 조건은 script.js에서 확인합니다. -->
+      <form id="historySearch" class="history-search" novalidate hidden>
+        <div class="report-field">
+          <label for="historyKeyword">신고 번호 또는 물건 특징</label>
+          <input type="text" id="historyKeyword" maxlength="20" placeholder="예: LF-001, 에어팟"
+            aria-describedby="historyKeywordError" />
+          <p id="historyKeywordError" class="field-error" role="alert"></p>
+        </div>
+        <div class="report-field">
+          <label for="historyStatus">신고 상태</label>
+          <select id="historyStatus">
+            <option value="all">전체</option>
+            <option value="active">접수 중</option>
+            <option value="canceled">취소됨</option>
+          </select>
+        </div>
+        <div class="step-actions history-search-actions">
+          <button id="historyReset" class="secondary-button" type="button">조건 초기화</button>
+          <button class="primary-button" type="submit">신고 찾기</button>
+        </div>
+      </form>
+
+      <p id="historyNotice" class="history-notice" aria-live="polite"></p>
+      <p id="historyResultText" class="history-result-text" aria-live="polite"></p>
+      <ul id="historyList" class="history-list"></ul>
+
+      <!-- 신고가 하나도 없을 때 / 조건에 맞는 신고가 없을 때 다음 행동을 안내합니다. -->
+      <div id="historyEmpty" class="history-empty">
+        <p id="historyEmptyText">아직 접수한 신고가 없습니다. 잃어버린 물건이 있다면 먼저 분실물 신고를 해 주세요.</p>
+        <button id="historyEmptyAction" class="primary-button" type="button">분실물 신고하러 가기</button>
+      </div>
+      <p class="storage-note">※ 신고 내역은 지금 열려 있는 화면에만 저장되어 새로고침하면 사라집니다.</p>
+    </section>
+
+    <section id="subscribe"class="content-section subscribe-section">
       <h2>알림 받기</h2>
       <p>이메일을 등록하면 습득물 알림을 놓치지 않고 받아볼 수 있습니다.</p>
       <!-- novalidate: 브라우저 기본 검사 대신 script.js의 조건문으로 입력값을 확인합니다. -->

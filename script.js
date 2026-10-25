@@ -1,6 +1,7 @@
 // 5주차: 습득 알림 신청 폼에 입력값 검사와 처리 결과 안내 기능을 추가합니다.
 // 6주차: click · input · change 이벤트와 탭 UI를 추가합니다.
 // 7주차: 분실물 신고 흐름(시작 → 물건 정보 → 장소·연락 → 내용 확인 → 완료)을 추가합니다.
+// 중간고사: 완료한 신고를 '내 신고 내역'에 모아 다시 열기 · 조건으로 찾기 · 신고 취소를 추가합니다.
 
 // 1. 필요한 HTML 요소를 선택합니다.
 const themeButton = document.querySelector("#themeButton");
@@ -444,6 +445,23 @@ function completeReport() {
     reportResult.textContent = "신고 번호를 가지고 보관 장소에 문의하면 더 빨리 찾을 수 있습니다. "
       + "아래 버튼으로 보관 장소와 운영 시간을 확인하세요.";
   }
+  reportResult.textContent += " 이 신고는 '내 신고 내역'에서 다시 열어 보거나 취소할 수 있습니다.";
+
+  // 중간고사: 지금 값을 복사해 신고 내역 맨 앞에 추가합니다. (다른 물건을 신고해도 바뀌지 않게)
+  reports.unshift({
+    number: reportNumber.textContent,
+    category: itemCategory.value,
+    detail: itemDetail.value.trim(),
+    place: lostPlace.value,
+    date: lostDate.value,
+    contact: getContactValue(),
+    contactText: getContactText(),
+    createdAt: getTimeText(),
+    status: "active",
+    cancelReason: "",
+    canceledAt: ""
+  });
+  renderHistory();
 
   showReportStep(4);
   console.log("분실물 신고 접수:", reportNumber.textContent, itemCategory.value, lostPlace.value);
@@ -522,3 +540,377 @@ document.querySelector("#reportRestart").addEventListener("click", handleReportR
 contactRadios.forEach(function (radio) {
   radio.addEventListener("change", handleContactChange);
 });
+
+// ===============================================================
+// 중간고사: 내 신고 내역
+// 7주차 흐름의 끝(완료 화면)에서 이어집니다.
+// 완료한 신고 다시 열기 → 조건으로 찾기(결과 없음 안내) → 신고 취소(사유 검사, 상태 변경)
+// ===============================================================
+
+// 1. 필요한 HTML 요소를 선택합니다.
+const historyStats = document.querySelector("#historyStats");
+const historySearch = document.querySelector("#historySearch");
+const historyKeyword = document.querySelector("#historyKeyword");
+const historyStatus = document.querySelector("#historyStatus");
+const historyNotice = document.querySelector("#historyNotice");
+const historyResultText = document.querySelector("#historyResultText");
+const historyList = document.querySelector("#historyList");
+const historyEmpty = document.querySelector("#historyEmpty");
+const historyEmptyText = document.querySelector("#historyEmptyText");
+const historyEmptyAction = document.querySelector("#historyEmptyAction");
+
+// 2. 상태를 저장할 변수를 만듭니다.
+const statusNames = { all: "전체", active: "접수 중", canceled: "취소됨" };
+let reports = []; // 접수한 신고 (최근 신고가 앞). 새로고침하면 사라집니다.
+let appliedKeyword = ""; // 검사를 통과해 실제로 적용된 검색어
+let appliedStatus = "all";
+let openNumber = ""; // 자세히 보기를 펼친 신고 번호
+let cancelingNumber = ""; // 취소 사유를 고르는 중인 신고 번호
+
+// 지금 시각을 "10월 25일 14:05" 형식으로 만듭니다.
+function getTimeText() {
+  const now = new Date();
+  const minute = String(now.getMinutes()).padStart(2, "0");
+  return (now.getMonth() + 1) + "월 " + now.getDate() + "일 " + now.getHours() + ":" + minute;
+}
+
+function findReport(number) {
+  return reports.find(function (report) {
+    return report.number === number;
+  });
+}
+
+// 태그를 만들고 class와 글자를 한 번에 넣습니다. (textContent라 입력값이 HTML로 해석되지 않습니다.)
+function createElement(tag, className, text) {
+  const element = document.createElement(tag);
+  if (className) {
+    element.className = className;
+  }
+  if (text) {
+    element.textContent = text;
+  }
+  return element;
+}
+
+function createActionButton(text, className, action, number) {
+  const button = createElement("button", className, text);
+  button.type = "button";
+  button.dataset.action = action;
+  button.dataset.number = number;
+  return button;
+}
+
+// ---------------------------------------------------------------
+// 조건 검사: 적용된 검색어와 상태에 맞는 신고만 돌려줍니다.
+// ---------------------------------------------------------------
+function getFilteredReports() {
+  const keyword = appliedKeyword.toLowerCase();
+
+  return reports.filter(function (report) {
+    const statusMatch = appliedStatus === "all" || report.status === appliedStatus;
+    const text = (report.category + " " + report.detail + " " + report.place).toLowerCase();
+    const keywordMatch = keyword === "" || report.number.toLowerCase() === keyword || text.includes(keyword);
+    return statusMatch && keywordMatch;
+  });
+}
+
+// 검색어 검사: LF로 시작하면 신고 번호 형식(LF-001)인지 확인합니다. 문제가 없으면 빈 문자열입니다.
+function validateHistoryKeyword(keyword) {
+  // /^LF-\d{3}$/i : LF- 뒤에 숫자 세 자리 (대소문자 구분 없음)
+  if (keyword.toUpperCase().startsWith("LF") && !/^LF-\d{3}$/i.test(keyword)) {
+    return "신고 번호는 LF-001처럼 'LF-'와 숫자 세 자리로 입력해 주세요. 물건 특징으로 찾아도 됩니다.";
+  }
+  return "";
+}
+
+function getConditionText() {
+  const parts = [];
+  if (appliedKeyword !== "") {
+    parts.push("검색어 '" + appliedKeyword + "'");
+  }
+  if (appliedStatus !== "all") {
+    parts.push("상태 '" + statusNames[appliedStatus] + "'");
+  }
+  return parts.join(" · ");
+}
+
+// ---------------------------------------------------------------
+// 화면 갱신: 상태(reports · 조건 · 펼침 · 취소 중)에 맞게 목록을 다시 만듭니다.
+// ---------------------------------------------------------------
+function createHistoryItem(report) {
+  const item = createElement("li", "history-item");
+  const isCanceled = report.status === "canceled";
+  const isOpen = openNumber === report.number;
+  item.classList.toggle("is-canceled", isCanceled);
+  item.classList.toggle("is-open", isOpen);
+
+  const head = createElement("div", "history-item-head");
+  head.append(
+    createElement("h3", "history-number", report.number),
+    createElement("span", "status-badge", statusNames[report.status])
+  );
+  item.append(
+    head,
+    createElement("p", "history-title", report.category + " · " + report.detail),
+    createElement("p", "history-meta", report.place + " · " + formatDate(report.date) + " 분실")
+  );
+
+  // 자세히 보기: 연락 방법과 접수·취소 정보를 다시 보여 줍니다.
+  if (isOpen) {
+    const rows = [
+      ["연락 방법", report.contactText],
+      ["접수 시각", report.createdAt]
+    ];
+    if (isCanceled) {
+      rows.push(["취소 사유", report.cancelReason], ["취소 시각", report.canceledAt]);
+    }
+    const details = createElement("dl", "report-summary history-details");
+    rows.forEach(function (row) {
+      details.append(createElement("dt", "", row[0]), createElement("dd", "", row[1]));
+    });
+    item.append(details);
+  }
+
+  // 신고 취소: 사유를 골라야 확정할 수 있습니다.
+  if (cancelingNumber === report.number) {
+    const box = createElement("div", "cancel-box");
+    const field = createElement("div", "report-field");
+    const selectId = "cancelReason-" + report.number;
+    const label = createElement("label", "", "신고를 취소하는 이유");
+    const select = createElement("select");
+    const error = createElement("p", "field-error");
+
+    label.htmlFor = selectId;
+    select.id = selectId;
+    select.setAttribute("aria-describedby", selectId + "Error");
+    error.id = selectId + "Error";
+    error.setAttribute("role", "alert");
+    ["", "물건을 찾았어요", "잘못 신고했어요", "더 이상 찾지 않아요"].forEach(function (reason) {
+      const option = createElement("option", "", reason || "이유를 선택하세요");
+      option.value = reason;
+      select.append(option);
+    });
+    field.append(label, select, error);
+
+    const boxActions = createElement("div", "step-actions");
+    boxActions.append(
+      createActionButton("취소하지 않기", "secondary-button", "keep", report.number),
+      createActionButton("신고 취소 확정", "danger-button", "confirm-cancel", report.number)
+    );
+    box.append(
+      field,
+      createElement("p", "field-help", "취소하면 이 신고로는 습득 알림을 받을 수 없고, 되돌릴 수 없습니다."),
+      boxActions
+    );
+    item.append(box);
+  }
+
+  const actions = createElement("div", "step-actions");
+  const toggleButton = createActionButton(isOpen ? "접기" : "자세히 보기", "secondary-button", "toggle", report.number);
+  toggleButton.setAttribute("aria-expanded", String(isOpen));
+  actions.append(toggleButton);
+  if (!isCanceled && cancelingNumber !== report.number) {
+    actions.append(createActionButton("신고 취소", "danger-button", "cancel", report.number));
+  }
+  item.append(actions);
+
+  return item;
+}
+
+function renderHistory() {
+  const activeCount = reports.filter(function (report) {
+    return report.status === "active";
+  }).length;
+  const matches = getFilteredReports();
+  const conditionText = getConditionText();
+
+  historyStats.textContent = "전체 " + reports.length + "건 · 접수 중 " + activeCount
+    + "건 · 취소 " + (reports.length - activeCount) + "건";
+  historyStats.hidden = reports.length === 0;
+  historySearch.hidden = reports.length === 0;
+
+  historyList.textContent = "";
+  matches.forEach(function (report) {
+    historyList.append(createHistoryItem(report));
+  });
+
+  if (reports.length === 0) {
+    historyResultText.textContent = "";
+    historyEmptyText.textContent = "아직 접수한 신고가 없습니다. 잃어버린 물건이 있다면 먼저 분실물 신고를 해 주세요.";
+    historyEmptyAction.textContent = "분실물 신고하러 가기";
+    historyEmpty.hidden = false;
+  } else if (matches.length === 0) {
+    historyResultText.textContent = "전체 " + reports.length + "건 중 0건";
+    historyEmptyText.textContent = conditionText + "에 맞는 신고가 없습니다. "
+      + "검색어를 줄이거나 상태를 '전체'로 바꿔 보세요.";
+    historyEmptyAction.textContent = "조건 초기화하고 전체 보기";
+    historyEmpty.hidden = false;
+  } else {
+    historyResultText.textContent = conditionText === ""
+      ? "최근에 접수한 신고가 위에 표시됩니다."
+      : conditionText + " · 전체 " + reports.length + "건 중 " + matches.length + "건을 찾았습니다.";
+    historyEmpty.hidden = true;
+  }
+}
+
+// 다시 만든 목록에서 특정 신고의 버튼으로 초점을 옮깁니다. 버튼이 없으면 false를 돌려줍니다.
+function focusHistoryButton(number, action, options) {
+  const button = historyList.querySelector('[data-number="' + number + '"][data-action="' + action + '"]');
+  if (button) {
+    button.focus(options);
+    return true;
+  }
+  return false;
+}
+
+// ---------------------------------------------------------------
+// 조건으로 찾기
+// ---------------------------------------------------------------
+// submit(신고 찾기) · change(상태): 검색어를 검사하고 통과하면 조건을 적용합니다.
+function applyHistorySearch() {
+  const keyword = historyKeyword.value.trim();
+  const errorText = validateHistoryKeyword(keyword);
+
+  if (errorText !== "") {
+    setFieldError(historyKeyword, errorText);
+    historyKeyword.focus();
+    return; // 이전 결과는 그대로 둡니다.
+  }
+
+  clearFieldError(historyKeyword);
+  appliedKeyword = keyword;
+  appliedStatus = historyStatus.value;
+  historyNotice.textContent = "";
+  renderHistory();
+}
+
+function handleHistorySearch(event) {
+  event.preventDefault();
+  applyHistorySearch();
+}
+
+// 검색어·상태·오류를 지우고 전체 목록을 보여 줍니다.
+function resetHistorySearch() {
+  historyKeyword.value = "";
+  historyStatus.value = "all";
+  clearFieldError(historyKeyword);
+  appliedKeyword = "";
+  appliedStatus = "all";
+  renderHistory();
+}
+
+// click(조건 초기화)
+function handleHistoryReset() {
+  resetHistorySearch();
+  historyKeyword.focus();
+}
+
+// click(내역 없음·결과 없음 안내 버튼): 상황에 맞는 다음 행동으로 이동합니다.
+function handleHistoryEmptyAction() {
+  if (reports.length > 0) {
+    handleHistoryReset();
+    return;
+  }
+
+  // 신고가 하나도 없으면 분실물 신고로 이동합니다. (이미 시작했다면 지금 단계 제목으로)
+  const target = reportIntro.hidden
+    ? document.querySelector(".report-step:not([hidden]) h3")
+    : reportStartButton;
+  document.querySelector("#report").scrollIntoView({ behavior: "smooth" });
+  target.focus({ preventScroll: true });
+}
+
+// ---------------------------------------------------------------
+// 목록 안의 버튼: 자세히 보기 · 신고 취소 · 취소하지 않기 · 신고 취소 확정
+// ---------------------------------------------------------------
+function confirmCancel(number) {
+  const reasonSelect = document.querySelector("#cancelReason-" + number);
+  const report = findReport(number);
+
+  if (reasonSelect.value === "") {
+    setFieldError(reasonSelect, "취소하는 이유를 선택해 주세요. 취소하지 않으려면 '취소하지 않기'를 누르세요.");
+    reasonSelect.focus();
+    return;
+  }
+
+  report.status = "canceled";
+  report.cancelReason = reasonSelect.value;
+  report.canceledAt = getTimeText();
+  cancelingNumber = "";
+  openNumber = number;
+
+  historyNotice.textContent = number + " 신고를 취소했습니다.";
+  if (report.contact === "email") {
+    historyNotice.textContent += " 이 신고에 대한 이메일 알림도 더 이상 보내지 않습니다.";
+  }
+  if (report.cancelReason === "물건을 찾았어요") {
+    historyNotice.textContent += " 물건을 찾으셨다니 다행입니다!";
+  }
+  // '접수 중'만 보고 있으면 취소한 신고가 목록에서 빠지므로 이유를 알려 줍니다.
+  if (appliedStatus === "active") {
+    historyNotice.textContent += " 지금은 '접수 중'만 보고 있어 목록에서 빠졌습니다. 상태를 '전체'로 바꾸면 다시 볼 수 있습니다.";
+  }
+
+  renderHistory();
+  if (!focusHistoryButton(number, "toggle")) {
+    historyStatus.focus();
+  }
+}
+
+function handleHistoryListClick(event) {
+  const button = event.target.closest("button[data-action]");
+  if (!button) {
+    return;
+  }
+  const number = button.dataset.number;
+  const action = button.dataset.action;
+
+  if (action === "toggle") {
+    openNumber = openNumber === number ? "" : number;
+    renderHistory();
+    focusHistoryButton(number, "toggle");
+  } else if (action === "cancel") {
+    cancelingNumber = number; // 다른 신고의 취소 창은 닫힙니다.
+    historyNotice.textContent = "";
+    renderHistory();
+    document.querySelector("#cancelReason-" + number).focus();
+  } else if (action === "keep") {
+    cancelingNumber = "";
+    renderHistory();
+    focusHistoryButton(number, "cancel");
+  } else if (action === "confirm-cancel") {
+    confirmCancel(number);
+  }
+}
+
+// change(취소 사유): 사유를 고르면 오류 표시를 지웁니다.
+function handleHistoryListChange(event) {
+  if (event.target.matches("select")) {
+    clearFieldError(event.target);
+  }
+}
+
+// click(완료 화면의 내 신고 내역 보기): 조건을 풀고 방금 접수한 신고를 펼쳐서 보여 줍니다.
+function handleReportHistory() {
+  openNumber = reportNumber.textContent;
+  cancelingNumber = "";
+  historyNotice.textContent = "";
+  resetHistorySearch();
+  document.querySelector("#history").scrollIntoView({ behavior: "smooth" });
+  focusHistoryButton(openNumber, "toggle", { preventScroll: true });
+}
+
+// 처음 화면: 아직 신고가 없다는 안내를 보여 줍니다.
+renderHistory();
+
+// 이벤트와 함수를 연결합니다.
+document.querySelector("#reportHistory").addEventListener("click", handleReportHistory);
+historySearch.addEventListener("submit", handleHistorySearch);
+historyStatus.addEventListener("change", applyHistorySearch);
+historyKeyword.addEventListener("input", function () {
+  clearFieldError(historyKeyword);
+});
+document.querySelector("#historyReset").addEventListener("click", handleHistoryReset);
+historyEmptyAction.addEventListener("click", handleHistoryEmptyAction);
+historyList.addEventListener("click", handleHistoryListClick);
+historyList.addEventListener("change", handleHistoryListChange);
